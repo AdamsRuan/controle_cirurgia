@@ -125,7 +125,7 @@ h3{font:600 15px Fredoka,sans-serif;margin:0 0 12px}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, updateDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ===== Senha mestre (só o hash fica no código) =====
 const HASH_SENHA_MESTRE = "21cf8d8d06229b7f87e9dfed55269d79c47c3f262f64b22035fa451e6474298b";
@@ -194,6 +194,7 @@ function abrirApp(){
     dados=snap.docs.map(d=>({id:d.id,...d.data({serverTimestamps:'estimate'})})).filter(c=>c.ativo!==false);
     pronto=true; render();
   },err=>{ console.error(err); pronto=true; render(); toast('Erro ao ler o Firestore (veja as regras de segurança)'); });
+}
 
 // ===== Abas =====
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
@@ -218,10 +219,10 @@ $('form').onsubmit=e=>{
   e.preventDefault();
   const c={prontuario:$('prontuario').value.trim(),nome:$('nome').value.trim(),paciente:$('paciente').value.trim(),
     hospital:$('hospital').value.trim(),medico:$('medico').value.trim(),data:$('data').value,
-    instrumentador:$('instrumentador').value.trim(),ativo:true};
+    instrumentador:$('instrumentador').value.trim()};
   const falha=err=>{console.error(err);toast('Erro ao salvar: '+(err.code||err.message))};
   if(editId){ updateDoc(doc(db,'cirurgias',editId),{...c,atualizadoPor:usuario(),atualizadoEm:serverTimestamp()}).catch(falha); }
-  else{ addDoc(COL,{...c,registradoPor:usuario(),criadoEm:serverTimestamp()}).catch(falha); }
+  else{ addDoc(COL,{...c,ativo:true,registradoPor:usuario(),criadoEm:serverTimestamp()}).catch(falha); }
   resetForm();toast('Cirurgia salva');goTab('lista');
 };
 function editar(id){
@@ -232,13 +233,7 @@ function editar(id){
 }
 function excluir(id){
   const c=dados.find(x=>x.id===id);
-  if(c&&confirm(`Excluir "${c.nome}"${c.paciente?' de '+c.paciente:''}?`)){
-    updateDoc(doc(db,'cirurgias',id),{
-      ativo: false,
-      excluidoPor: usuario(),
-      excluidoEm: serverTimestamp()
-    }).catch(e=>toast('Erro ao excluir: '+(e.code||e.message)));
-  }
+  if(c&&confirm(`Excluir "${c.nome}"${c.paciente?' de '+c.paciente:''}?`)) updateDoc(doc(db,'cirurgias',id),{ativo:false,excluidoPor:usuario(),excluidoEm:serverTimestamp()}).catch(e=>toast('Erro ao excluir: '+(e.code||e.message)));
 }
 window.editar=editar; window.excluir=excluir;
 
@@ -296,7 +291,7 @@ $('arq').onchange=async e=>{
     const novos=arr.filter(x=>!x.excluido&&!x.deletado).map(x=>({prontuario:x.prontuario||'',nome:x.nome||x.nomeCirurgia||'',paciente:x.paciente||'',hospital:x.hospital||'',medico:x.medico||'',data:x.data||'',instrumentador:x.instrumentador||''}));
     if(!novos.length)throw 0;
     if(!confirm(`Importar ${novos.length} cirurgia(s)? Elas serão ADICIONADAS às existentes.`))return;
-    novos.forEach(c=>addDoc(COL,{...c,registradoPor:usuario(),criadoEm:serverTimestamp()}).catch(err=>console.error(err)));
+    novos.forEach(c=>addDoc(COL,{...c,ativo:true,registradoPor:usuario(),criadoEm:serverTimestamp()}).catch(err=>console.error(err)));
     toast('Importando...');
   }catch(_){alert('Arquivo de backup inválido.')}
   e.target.value='';
