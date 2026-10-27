@@ -2,7 +2,7 @@
 // Cache offline SOMENTE de recursos estáticos (arquivos locais + SDK do Firebase em JS).
 // Nenhuma requisição de dados do Firebase/Firestore passa por aqui.
 // Aumente a versão a cada publicação para atualizar os aparelhos instalados.
-const V='gestao-cirurgica-v4';
+const V='gestao-cirurgica-v5';
 const FILES=['./','./index.html','./manifest.json','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-192-maskable.png','./icons/icon-512-maskable.png','./icons/apple-touch-icon.png','./icons/favicon-32.png'];
 
 // Domínios de dados/autenticação do Firebase: nunca interceptar.
