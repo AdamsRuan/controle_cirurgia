@@ -123,8 +123,9 @@ h3{font:600 15px Fredoka,sans-serif;margin:0 0 12px}
 <div id="toast"></div>
 </div>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ===== Senha mestre (só o hash fica no código) =====
 const HASH_SENHA_MESTRE = "21cf8d8d06229b7f87e9dfed55269d79c47c3f262f64b22035fa451e6474298b";
@@ -149,6 +150,8 @@ let db;
 try{ db = initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})}); }
 catch(e){ db = initializeFirestore(app,{}); }
 const COL = collection(db,'cirurgias');
+const auth = getAuth(app); // sessão persistida automaticamente (IndexedDB)
+const EMAIL_EQUIPE = 'equipe@cirurgias.com'; // a senha NÃO fica no código: é a própria senha mestre digitada
 
 let dados=[], editId=null, pronto=false, iniciado=false;
 const $=id=>document.getElementById(id);
@@ -163,15 +166,26 @@ function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTi
 // ===== Login =====
 $('form-login').onsubmit=async e=>{
   e.preventDefault();
-  const nome=$('l-nome').value.trim(), senha=$('l-senha').value;
+  const nome=$('l-nome').value.trim(), senha=$('l-senha').value, btn=e.submitter||$('form-login').querySelector('button');
   if(!nome){$('login-erro').textContent='Informe seu nome ou iniciais.';return}
   let h='';
   try{ h=await gerarHashSHA256(senha); }
   catch(_){ $('login-erro').textContent='Abra o app por HTTPS (GitHub Pages) para validar a senha.';return }
-  if(h===HASH_SENHA_MESTRE){ localStorage.setItem('cirurgias_usuario',nome); $('l-senha').value=''; abrirApp(); }
-  else{ $('login-erro').textContent='Senha incorreta.'; $('l-senha').value=''; }
+  if(h!==HASH_SENHA_MESTRE){ $('login-erro').textContent='Senha incorreta.'; $('l-senha').value=''; return }
+  btn.disabled=true; $('login-erro').textContent='Entrando...';
+  try{
+    await signInWithEmailAndPassword(auth,EMAIL_EQUIPE,senha);
+    localStorage.setItem('cirurgias_usuario',nome); $('l-senha').value=''; $('login-erro').textContent='';
+    abrirApp();
+  }catch(err){
+    console.error(err);
+    $('login-erro').textContent = err.code==='auth/network-request-failed' ? 'Sem internet. O primeiro acesso precisa de conexão.'
+      : (err.code==='auth/invalid-credential'||err.code==='auth/wrong-password'||err.code==='auth/user-not-found') ? 'A conta da equipe não aceitou a senha. Verifique o usuário no Firebase Auth.'
+      : 'Erro no login: '+(err.code||err.message);
+  }
+  btn.disabled=false;
 };
-$('sair').onclick=()=>{ if(confirm('Sair deste aparelho?')){ localStorage.removeItem('cirurgias_usuario'); location.reload(); } };
+$('sair').onclick=async()=>{ if(confirm('Sair deste aparelho?')){ localStorage.removeItem('cirurgias_usuario'); try{await signOut(auth)}catch(_){} location.reload(); } };
 function abrirApp(){
   $('login').style.display='none'; $('app').classList.remove('oculto');
   $('usr').textContent=usuario();
@@ -285,7 +299,11 @@ $('arq').onchange=async e=>{
 
 function render(){sugestoes();renderLista();renderDash()}
 $('data').value=hoje();
-if(usuario()) abrirApp(); else $('login').style.display='flex';
+// Restaura a sessão do Firebase em segundo plano; só abre o painel se houver nome salvo E sessão válida.
+onAuthStateChanged(auth,u=>{
+  if(u&&usuario()) abrirApp();
+  else{ if(usuario())$('l-nome').value=usuario(); $('login').style.display='flex'; }
+});
 </script>
 </body>
 </html>
