@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F0F5F7">
+<title>Gestão Cirúrgica</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));</script>
+<style>
+:root{--bg:#F0F5F7;--bg2:#E4EEF1;--card:#fff;--ink:#1F3A44;--soft:#64818A;--pri:#2E7D8C;--prid:#1F5C68;--red:#B84C3E;--bd:rgba(31,58,68,.12);--sh:0 2px 10px rgba(31,58,68,.08)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,sans-serif}
+#app{max-width:480px;margin:0 auto;min-height:100vh}
+header{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--bd);padding:calc(env(safe-area-inset-top,0px) + 14px) 20px 12px}
+h1{font:600 20px Fredoka,sans-serif;margin:0}
+header p{margin:2px 0 0;font-size:12.5px;color:var(--soft)}
+main{padding:16px 16px 96px}
+.tab{display:none}.tab.on{display:block}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);border-top:1px solid var(--bd);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:20}
+nav button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;color:var(--soft);font:500 11px Inter,sans-serif;cursor:pointer}
+nav button.on{color:var(--prid);background:var(--bg2)}
+nav svg{width:22px;height:22px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);margin-bottom:12px}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--soft);margin:0 0 5px}
+.f{margin-bottom:12px}
+input,select{width:100%;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:#fff;font:400 15px Inter,sans-serif;color:var(--ink)}
+input:focus,select:focus{outline:2px solid var(--pri);outline-offset:-1px}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.btn{border:0;border-radius:12px;padding:13px;font:600 14.5px Inter,sans-serif;cursor:pointer;width:100%}
+.p{background:var(--pri);color:#fff}.s{background:var(--bg2);color:var(--prid)}
+.btns{display:flex;gap:10px}
+.item{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:13px 15px;box-shadow:var(--sh);margin-bottom:10px;display:flex;justify-content:space-between;gap:10px}
+.item .t{font:600 16px Fredoka,sans-serif}
+.item .t small{color:var(--pri);font:600 12px Inter,sans-serif;margin-right:6px}
+.item .m{font-size:13px;color:var(--soft);line-height:1.6;margin-top:3px}.item .m b{color:var(--ink);font-weight:500}
+.act{display:flex;flex-direction:column;gap:6px}
+.ib{width:34px;height:34px;border-radius:10px;border:1px solid var(--bd);background:#fff;color:var(--soft);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ib svg{width:17px;height:17px}.ib.d{color:var(--red)}
+.empty{text-align:center;color:var(--soft);padding:50px 20px;font-size:14px}
+.ft{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:13px;color:var(--soft)}
+.link{background:none;border:0;color:var(--pri);font:600 13px Inter,sans-serif;cursor:pointer;padding:4px}
+.big{font:600 40px Fredoka,sans-serif;color:var(--prid);line-height:1}
+.rk{margin:0 0 9px}.rk .l{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:3px}
+.bar{height:8px;background:var(--bg2);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--pri);border-radius:6px}
+h3{font:600 15px Fredoka,sans-serif;margin:0 0 12px}
+.badge{font-size:12px;font-weight:600;color:var(--prid);margin-bottom:10px}
+#app.oculto{display:none}
+#login{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+#login .card{width:100%;max-width:380px;margin:0}
+#login h2{font:600 22px Fredoka,sans-serif;margin:0 0 4px}
+#login p{margin:0 0 16px;font-size:13.5px;color:var(--soft)}
+#login-erro{color:var(--red);font-size:13px;min-height:18px;margin-bottom:8px}
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div id="login" style="display:none">
+  <form id="form-login" class="card" autocomplete="off">
+    <h2>Gestão Cirúrgica</h2><p>Informe seu nome ou iniciais e a senha mestre.</p>
+    <div class="f"><label>Nome / Iniciais</label><input id="l-nome" placeholder="Ex: Maria S." required></div>
+    <div class="f"><label>Senha mestre</label><input type="password" id="l-senha" required></div>
+    <div id="login-erro"></div>
+    <button class="btn p">Entrar</button>
+  </form>
+</div>
+<div id="app" class="oculto">
+<header><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><h1 id="ht">Cirurgias</h1><p id="hs">Gestão Cirúrgica</p></div><div style="text-align:right;font-size:12px;color:var(--soft)"><div id="usr"></div><button class="link" id="sair" style="padding:0;font-size:12px">Sair</button></div></div></header>
+<main>
+
+<section id="tab-lista" class="tab on">
+  <button class="link" id="btn-filtros" style="margin-bottom:8px">Filtros ▾</button>
+  <div id="painel" class="card" style="display:none">
+    <div class="f"><label>Buscar</label><input id="q" placeholder="Cirurgia, paciente, prontuário, hospital..."></div>
+    <div class="row f"><div><label>De</label><input type="date" id="de"></div><div><label>Até</label><input type="date" id="ate"></div></div>
+    <button class="btn s" id="limpar" type="button">Limpar filtros</button>
+  </div>
+  <div class="ft"><span id="cont"></span><span><button class="link" id="exp">Backup</button><button class="link" id="imp">Restaurar</button><input type="file" id="arq" accept="application/json" hidden></span></div>
+  <div id="lista"></div>
+</section>
+
+<section id="tab-cad" class="tab">
+  <form id="form" class="card" autocomplete="off">
+    <div id="edbadge" class="badge" style="display:none">Editando cirurgia</div>
+    <div class="row f">
+      <div><label>Nº do prontuário</label><input id="prontuario" placeholder="Ex: 123456"></div>
+      <div><label>Data</label><input type="date" id="data" required></div>
+    </div>
+    <div class="f"><label>Nome da cirurgia</label><input id="nome" placeholder="Ex: Colecistectomia" list="dl-nome" required></div>
+    <div class="f"><label>Paciente</label><input id="paciente" placeholder="Nome do paciente"></div>
+    <div class="f"><label>Hospital</label><input id="hospital" placeholder="Ex: Hospital Regional" list="dl-hospital"></div>
+    <div class="f"><label>Médico</label><input id="medico" placeholder="Ex: Dr. João Silva" list="dl-medico"></div>
+    <div class="f"><label>Instrumentador</label><input id="instrumentador" placeholder="Ex: Ruan Costa" list="dl-instr"></div>
+    <div class="btns"><button type="button" class="btn s" id="cancelar" style="display:none">Cancelar</button><button class="btn p">Salvar cirurgia</button></div>
+  </form>
+  <datalist id="dl-nome"></datalist><datalist id="dl-hospital"></datalist><datalist id="dl-medico"></datalist><datalist id="dl-instr"></datalist>
+</section>
+
+<section id="tab-dash" class="tab">
+  <div class="card">
+    <div class="row f"><div><label>De</label><input type="date" id="d-de"></div><div><label>Até</label><input type="date" id="d-ate"></div></div>
+    <div class="row f"><div><label>Hospital</label><select id="d-hosp"></select></div><div><label>Médico</label><select id="d-med"></select></div></div>
+    <button class="btn s" id="d-limpar">Limpar filtros</button>
+  </div>
+  <div class="card"><label>Cirurgias realizadas</label><div class="big" id="d-total">0</div></div>
+  <div class="card"><h3>Por hospital</h3><div id="d-h"></div></div>
+  <div class="card"><h3>Por médico</h3><div id="d-m"></div></div>
+  <div class="card"><h3>Procedimentos mais frequentes</h3><div id="d-p"></div></div>
+</section>
+
+</main>
+<nav>
+  <button class="on" data-tab="lista" data-t="Cirurgias" data-s="Gestão Cirúrgica"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Cirurgias</button>
+  <button data-tab="cad" data-t="Cadastro" data-s="Nova cirurgia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Cadastro</button>
+  <button data-tab="dash" data-t="Dashboard" data-s="Resumo geral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>Dashboard</button>
+</nav>
+<div id="toast"></div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+// ===== Senha mestre (só o hash fica no código) =====
+const HASH_SENHA_MESTRE = "21cf8d8d06229b7f87e9dfed55269d79c47c3f262f64b22035fa451e6474298b";
+async function gerarHashSHA256(texto) {
+  const msgUint8 = new TextEncoder().encode(texto);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ===== Firebase =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBVwqzlpeb79mUozMw9pwJ0_eKgQK-_VlQ",
+  authDomain: "controle-cirurgias-pwa.firebaseapp.com",
+  projectId: "controle-cirurgias-pwa",
+  storageBucket: "controle-cirurgias-pwa.firebasestorage.app",
+  messagingSenderId: "30484326935",
+  appId: "1:30484326935:web:b21e2063bb2eda69d00a52"
+};
+const app = initializeApp(firebaseConfig);
+let db;
+try{ db = initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})}); }
+catch(e){ db = initializeFirestore(app,{}); }
+const COL = collection(db,'cirurgias');
+
+let dados=[], editId=null, pronto=false, iniciado=false;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtData=d=>d?d.split('-').reverse().join('/'):'';
+const fmtTs=t=>t&&t.toDate?t.toDate().toLocaleDateString('pt-BR'):'';
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const hoje=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const usuario=()=>localStorage.getItem('cirurgias_usuario');
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)}
+
+// ===== Login =====
+$('form-login').onsubmit=async e=>{
+  e.preventDefault();
+  const nome=$('l-nome').value.trim(), senha=$('l-senha').value;
+  if(!nome){$('login-erro').textContent='Informe seu nome ou iniciais.';return}
+  let h='';
+  try{ h=await gerarHashSHA256(senha); }
+  catch(_){ $('login-erro').textContent='Abra o app por HTTPS (GitHub Pages) para validar a senha.';return }
+  if(h===HASH_SENHA_MESTRE){ localStorage.setItem('cirurgias_usuario',nome); $('l-senha').value=''; abrirApp(); }
+  else{ $('login-erro').textContent='Senha incorreta.'; $('l-senha').value=''; }
+};
+$('sair').onclick=()=>{ if(confirm('Sair deste aparelho?')){ localStorage.removeItem('cirurgias_usuario'); location.reload(); } };
+function abrirApp(){
+  $('login').style.display='none'; $('app').classList.remove('oculto');
+  $('usr').textContent=usuario();
+  if(iniciado)return; iniciado=true;
+  onSnapshot(COL,{includeMetadataChanges:false},snap=>{
+    dados=snap.docs.map(d=>({id:d.id,...d.data({serverTimestamps:'estimate'})}));
+    pronto=true; render();
+  },err=>{ console.error(err); pronto=true; render(); toast('Erro ao ler o Firestore (veja as regras de segurança)'); });
+}
+
+// ===== Abas =====
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  if(b.dataset.tab!=='cad'&&editId)resetForm();
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+b.dataset.tab));
+  $('ht').textContent=b.dataset.t;$('hs').textContent=b.dataset.s;
+  if(b.dataset.tab==='dash')renderDash();
+  scrollTo(0,0);
+});
+const goTab=n=>document.querySelector(`nav button[data-tab=${n}]`).click();
+
+// ===== Cadastro =====
+function sugestoes(){
+  const u=k=>[...new Set(dados.map(c=>c[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  [['dl-nome','nome'],['dl-hospital','hospital'],['dl-medico','medico'],['dl-instr','instrumentador']]
+    .forEach(([id,k])=>$(id).innerHTML=u(k).map(v=>`<option value="${esc(v)}">`).join(''));
+}
+function resetForm(){editId=null;$('form').reset();$('data').value=hoje();$('edbadge').style.display='none';$('cancelar').style.display='none'}
+$('cancelar').onclick=()=>{resetForm();goTab('lista')};
+$('form').onsubmit=e=>{
+  e.preventDefault();
+  const c={prontuario:$('prontuario').value.trim(),nome:$('nome').value.trim(),paciente:$('paciente').value.trim(),
+    hospital:$('hospital').value.trim(),medico:$('medico').value.trim(),data:$('data').value,
+    instrumentador:$('instrumentador').value.trim()};
+  const falha=err=>{console.error(err);toast('Erro ao salvar: '+(err.code||err.message))};
+  if(editId){ updateDoc(doc(db,'cirurgias',editId),{...c,atualizadoPor:usuario(),atualizadoEm:serverTimestamp()}).catch(falha); }
+  else{ addDoc(COL,{...c,registradoPor:usuario(),criadoEm:serverTimestamp()}).catch(falha); }
+  resetForm();toast('Cirurgia salva');goTab('lista');
+};
+function editar(id){
+  const c=dados.find(x=>x.id===id);if(!c)return;
+  goTab('cad');editId=id;
+  ['prontuario','nome','paciente','hospital','medico','data','instrumentador'].forEach(k=>$(k).value=c[k]||'');
+  $('edbadge').style.display='block';$('cancelar').style.display='block';$('ht').textContent='Editar';
+}
+function excluir(id){
+  const c=dados.find(x=>x.id===id);
+  if(c&&confirm(`Excluir "${c.nome}"${c.paciente?' de '+c.paciente:''}?`)) deleteDoc(doc(db,'cirurgias',id)).catch(e=>toast('Erro ao excluir: '+(e.code||e.message)));
+}
+window.editar=editar; window.excluir=excluir;
+
+// ===== Lista + filtros =====
+$('btn-filtros').onclick=()=>{const p=$('painel');const a=p.style.display==='none';p.style.display=a?'block':'none'};
+['q','de','ate'].forEach(i=>$(i).oninput=renderLista);
+$('limpar').onclick=()=>{$('q').value=$('de').value=$('ate').value='';renderLista()};
+function renderLista(){
+  const q=norm($('q').value),de=$('de').value,ate=$('ate').value;
+  const r=dados.filter(c=>(!de||c.data>=de)&&(!ate||c.data<=ate)&&
+    (!q||norm([c.nome,c.paciente,c.prontuario,c.hospital,c.medico,c.instrumentador].join(' ')).includes(q)))
+    .sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.atualizadoEm||'').localeCompare(a.atualizadoEm||''));
+  $('cont').textContent=`${r.length} cirurgia${r.length===1?'':'s'}`;
+  $('lista').innerHTML=r.length?r.map(c=>`<div class="item"><div>
+    <div class="t">${c.prontuario?`<small>Pront. ${esc(c.prontuario)}</small>`:''}${esc(c.nome)}</div>
+    <div class="m">${c.paciente?`<div><b>Paciente:</b> ${esc(c.paciente)}</div>`:''}${c.hospital?`<div><b>Hospital:</b> ${esc(c.hospital)}</div>`:''}${c.data?`<div><b>Data:</b> ${fmtData(c.data)}</div>`:''}${c.medico?`<div><b>Médico:</b> ${esc(c.medico)}</div>`:''}${c.instrumentador?`<div><b>Instrumentador:</b> ${esc(c.instrumentador)}</div>`:''}${c.registradoPor?`<div><b>Registrado por:</b> ${esc(c.registradoPor)}${c.criadoEm?' em '+fmtTs(c.criadoEm):''}</div>`:''}</div></div>
+    <div class="act"><button class="ib" aria-label="Editar" onclick="editar('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+    <button class="ib d" aria-label="Excluir" onclick="excluir('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div></div>`).join('')
+    :`<div class="empty">${!pronto?'Carregando cirurgias...':dados.length?'Nenhuma cirurgia encontrada com esses filtros.':'Nenhuma cirurgia cadastrada ainda. Use a aba Cadastro.'}</div>`;
+}
+
+// ===== Dashboard =====
+['d-de','d-ate','d-hosp','d-med'].forEach(i=>$(i).oninput=renderDash);
+$('d-limpar').onclick=()=>{$('d-de').value=$('d-ate').value=$('d-hosp').value=$('d-med').value='';renderDash()};
+function opcoes(sel,k){
+  const v=sel.value,l=[...new Set(dados.map(c=>c[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  sel.innerHTML='<option value="">Todos</option>'+l.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+  if(l.includes(v))sel.value=v;
+}
+function ranking(el,k,lista,max){
+  const m={};lista.forEach(c=>{const n=c[k]||'Não informado';m[n]=(m[n]||0)+1});
+  let a=Object.entries(m).sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0],'pt-BR'));if(max)a=a.slice(0,max);
+  const top=a.length?a[0][1]:1;
+  $(el).innerHTML=a.length?a.map(([n,q])=>`<div class="rk"><div class="l"><span>${esc(n)}</span><b>${q}</b></div><div class="bar"><i style="width:${q/top*100}%"></i></div></div>`).join(''):'<div class="empty" style="padding:14px">Sem dados</div>';
+}
+function renderDash(){
+  opcoes($('d-hosp'),'hospital');opcoes($('d-med'),'medico');
+  const de=$('d-de').value,ate=$('d-ate').value,h=$('d-hosp').value,m=$('d-med').value;
+  const r=dados.filter(c=>(!de||c.data>=de)&&(!ate||c.data<=ate)&&(!h||c.hospital===h)&&(!m||c.medico===m));
+  $('d-total').textContent=r.length;
+  ranking('d-h','hospital',r);ranking('d-m','medico',r);ranking('d-p','nome',r,10);
+}
+
+// ===== Backup =====
+$('exp').onclick=()=>{
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify({cirurgias:dados},null,1)],{type:'application/json'}));
+  a.download=`cirurgias-${hoje()}.json`;a.click();
+};
+$('imp').onclick=()=>$('arq').click();
+$('arq').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const j=JSON.parse(await f.text()),arr=Array.isArray(j)?j:(j.cirurgias||[]);
+    const novos=arr.filter(x=>!x.excluido&&!x.deletado).map(x=>({prontuario:x.prontuario||'',nome:x.nome||x.nomeCirurgia||'',paciente:x.paciente||'',hospital:x.hospital||'',medico:x.medico||'',data:x.data||'',instrumentador:x.instrumentador||''}));
+    if(!novos.length)throw 0;
+    if(!confirm(`Importar ${novos.length} cirurgia(s)? Elas serão ADICIONADAS às existentes.`))return;
+    novos.forEach(c=>addDoc(COL,{...c,registradoPor:usuario(),criadoEm:serverTimestamp()}).catch(err=>console.error(err)));
+    toast('Importando...');
+  }catch(_){alert('Arquivo de backup inválido.')}
+  e.target.value='';
+};
+
+function render(){sugestoes();renderLista();renderDash()}
+$('data').value=hoje();
+if(usuario()) abrirApp(); else $('login').style.display='flex';
+</script>
+</body>
+</html>
